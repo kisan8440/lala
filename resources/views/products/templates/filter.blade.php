@@ -103,7 +103,7 @@
         </div>
 
         {{-- Porduct Parameter filter --}}
-        @if ($oem)
+        @if ($productPrammer)
 
             <div class="top-devider p-3">
                 <div class="filter-type dd
@@ -114,17 +114,35 @@
                 @endisset
                 ">
                     <h6 class="m-0">PARAMETERS</h6>
-                    @if ($productPrammer)
+
+
+                                        @if ($productPrammer)
                 <div class="filter-options">
+                    @php 
+                          $param_value = array();  
+                    @endphp
 
                     @forelse ($productPrammer as $key => $Prammer)
                         <div class="option">
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" id="param{{$key}}" value="{{ $Prammer->parametercode }}" class="custom-control-input"  name="ProductParameter"
-                              
-                                >
+                                
                                 <label class="custom-control-label" for="param{{$key}}">{{ $Prammer->parametername }}</label>
                             </div>
+                           
+                            @foreach($Prammer->parametervalues as $pkey =>  $pvalues)
+                            @if(!in_array($pvalues->parametervalue, $param_value))
+                            @php 
+                            $param_value[] = $pvalues->parametervalue;
+                            @endphp
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" id="param{{$key}}{{$pkey }}" value="{{ $pvalues->parametervalue }}" class="custom-control-input"  name="ProductParameter"
+                            
+                                >
+                                <label class="custom-control-label" for="param{{$key}}{{$pkey }}">{{ $pvalues->parametervalue }}</label>
+                            </div>
+                            @endif
+
+                            @endforeach
                         </div>
                     @empty
                     

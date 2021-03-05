@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\ProductItemParameter;
+
 class Product extends Model
 {
 
@@ -94,8 +96,8 @@ class Product extends Model
     public function getParamter($cat = '', $subCat = '')
     {
         $c_host = getHost();
-        $oem = DB::table('WebSiteItemParameter_VIEW')
-                ->select('WebSiteItemParameter_VIEW.ParameterCode',
+   
+    $oem = ProductItemParameter::with('parametervalues')->select('WebSiteItemParameter_VIEW.ParameterCode',
                      'WebSiteItemParameter_VIEW.ParameterName',
                      'WebSiteItemParameter_VIEW.categoryserialno',
                      'WebSiteItemParameter_VIEW.subcategoryserialno',
@@ -104,21 +106,27 @@ class Product extends Model
                      )
                 ->when($c_host, function ($query, $c_host) {
                     return $query->where('WebSiteItemParameter_VIEW.domainname', $c_host);
-                })
-                ->when($cat, function ($query, $cat) {
-                    return $query->whereIn('WebSiteItemParameter_VIEW.categorycode', explode(',', $cat));
-                })
-                ->when($subCat, function ($query, $subCat) {
-                    return $query->whereIn('WebSiteItemParameter_VIEW.subcategorycode', explode(',', $subCat));
-                })
-                ->orderby('WebSiteItemParameter_VIEW.domainserialno', 'asc')
+                });
+                if(!empty($cat)){
+                    $oem = $oem->when($cat, function ($query, $cat) {
+                        return $query->whereIn('WebSiteItemParameter_VIEW.categorycode', explode(',', $cat));
+                    });
+                }
+                if(!empty($subCat)){
+                    $oem = $oem->when($subCat, function ($query, $subCat) {
+                        return $query->whereIn('WebSiteItemParameter_VIEW.subcategorycode', explode(',', $subCat));
+                    });
+                }
+                $oem = $oem->orderby('WebSiteItemParameter_VIEW.domainserialno', 'asc')
                 ->orderby('WebSiteItemParameter_VIEW.categoryserialno', 'asc')
                 ->orderby('WebSiteItemParameter_VIEW.subcategoryserialno', 'asc')
-                ->orderby('WebSiteItemParameter_VIEW.domainserialno', 'asc')
+                ->orderby('WebSiteItemParameter_VIEW.ParameterSerialNo', 'asc')
                 ->distinct('WebSiteItemParameter_VIEW.ParameterCode')
                 ->get();
 
-            return $oem->unique('ParameterCode');
+               
+           
+            return $oem;
         
     }
 
